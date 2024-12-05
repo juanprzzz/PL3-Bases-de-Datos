@@ -359,4 +359,4 @@ FROM usuario u JOIN total_ediciones te ON u.nombre_usuario = te.nombre_usuario
 WHERE te.total_ediciones=(SELECT MAX(total_ediciones)
         FROM total_ediciones);
 
-ROLLBACK;
+COMMIT;
