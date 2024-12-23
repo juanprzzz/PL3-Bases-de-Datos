@@ -48,6 +48,7 @@ def print_options():
     print("10--- Listar todos los usuarios junto al número de ediciones que tiene de todos los discos junto al año de lanzamiento de su disco más antiguo, el año de lanzamiento de su disco más nuevo, y el año medio de todos sus discos de su colección")
     print("11--- Listar el nombre de los grupos que tienen más de 5 ediciones de sus discos en la base de datos")
     print("12--- Lista el usuario que más discos, contando todas sus ediciones tiene en la base de datos")
+    print("13--- Insertar un nuevo disco con su grupo y canciones")
 
 def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match pero quién sabe si lo tendrá actualizado)
     if(option == "1"):
@@ -74,9 +75,117 @@ def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match
         query = "SELECT  d.nombre_grupo FROM disco d JOIN edicion e ON (e.titulo_disco = d.titulo_disco AND e.anio_publicacion = d.anio_publicacion) GROUP BY d.nombre_grupo HAVING COUNT(*) > 5 ORDER BY d.nombre_grupo;"
     elif(option == "12"):
         query = "WITH total_ediciones AS( SELECT t.nombre_usuario, COUNT(*) AS total_ediciones FROM tiene t GROUP BY t.nombre_usuario ) SELECT u.nombre_usuario, te.total_ediciones FROM usuario u JOIN total_ediciones te ON u.nombre_usuario = te.nombre_usuario WHERE te.total_ediciones=(SELECT MAX(total_ediciones) FROM total_ediciones);"
+    #opcion 13 añadir disco
+   # elif(option == "14"):
+      #  query = "SELECT * FROM auditoria;"
+   # elif(option == "100"):       #por si quieres probar lo de insertardisco() xd 
+       # query = "SELECT * FROM disco WHERE titulo_disco='PRUEBADISCO';"
+   # elif(option == "101"):
+      #  query = "SELECT * FROM cancion WHERE titulo_disco='PRUEBADISCO';"
     else:
         print("Opción no válida")
     return query
+
+def insertar_disco(conn, cursor):
+    """
+    Inserta un disco, su grupo y sus canciones en la base de datos.
+    Si el disco ya existe, no se realiza la inserción.
+    """
+    try:
+        # Pedir los datos básicos del disco
+        titulo_disco = input("Introduce el título del disco: ")
+        anio_publicacion = int(input("Introduce el año de publicación: "))  # Convertir a entero
+
+        # Verificar si el disco ya existe
+        cursor.execute("SELECT COUNT(*) FROM disco WHERE titulo_disco = %s AND anio_publicacion = %s;", (titulo_disco, anio_publicacion)) 
+        if cursor.fetchone()[0] > 0:
+            print("El disco ya existe en la base de datos.")
+            return    
+        
+        # Pedir el resto de datos 
+        nombre_grupo = input("Introduce el nombre del grupo: ")
+        url= input("introduce la url del disco: ")
+
+        # Pedir las canciones y sus duraciones
+        canciones = []
+        salir = True
+        while (salir):
+            titulo_cancion = input("Introduce el título de la canción (o 'salir' para terminar de introducir canciones): ")
+            if titulo_cancion.lower() == 'salir':  # Si el usuario escribe 'salir', terminamos
+                salir = False
+            else:
+                duracion = input("Introduce la duración de la canción en formato MM:SS ")
+                canciones.append((titulo_cancion, duracion))  # Agregar la canción y su duración a la lista
+
+        # Pedir los géneros
+        generos=[]
+        salir=True
+        while (salir):
+            genero = input("Introduce el título de la canción (o 'salir' para terminar de introducir canciones): ")
+            if genero.lower() == 'salir':  # Si el usuario escribe 'salir', terminamos
+                salir = False
+            else:
+                generos.append(genero)  # Agregar la canción y su duración a la lista
+
+
+        # Insertar el grupo si no está registrado
+        cursor.execute("SELECT COUNT(*) FROM grupo WHERE nombre_grupo = %s;", (nombre_grupo))            
+        if cursor.fetchone()[0] == 0:   
+            try:   
+                cursor.execute("INSERT INTO grupo (nombre_grupo) VALUES (%s);", (nombre_grupo))  
+            except psycopg2.Error as e:
+                print(f"Error al insertar el grupo: {e}")
+                conn.rollback()  # Revertir cambios en caso de error
+                return
+            print("El grupo", nombre_grupo," fue insertado correctamente.")
+
+        # Insertar el nuevo disco
+        try:
+            cursor.execute(" INSERT INTO disco (titulo_disco, anio_publicacion, nombre_grupo, url_portada) VALUES (%s, %s, %s,%s);", (titulo_disco, anio_publicacion,nombre_grupo,url))
+        except psycopg2.Error as e:
+                print(f"Error al insertar el disco: {e}")
+                conn.rollback()  # Revertir cambios en caso de error
+                return
+        print("El disco fue insertado correctamente.")
+
+        # Insertar los generos
+        for genero in generos:
+            try:
+                cursor.execute("INSERT INTO genero (titulo_disco, anio_publicacion, genero) VALUES (%s, %s, %s);", (titulo_disco, anio_publicacion, genero))   
+            except psycopg2.Error as e:
+                print(f"Error al insertar el genero: {e}")
+                conn.rollback()  # Revertir cambios en caso de error
+                return
+            print("El genero ",genero, "fue insertado correctamente.")
+        
+        # Insertar las canciones
+        for cancion in canciones:
+            titulo_cancion, duracion = cancion  
+            try:
+                cursor.execute("""
+                INSERT INTO cancion (titulo_disco, anio_publicacion, titulo_cancion, duracion) 
+                VALUES (%s, %s, %s, MAKE_INTERVAL(
+                    mins => SPLIT_PART(%s, ':', 1)::INTEGER, 
+                    secs => SPLIT_PART(%s, ':', 2)::INTEGER
+                )::TIME);
+            """, (titulo_disco, anio_publicacion, titulo_cancion, duracion, duracion))
+
+            except psycopg2.Error as e:
+                print(f"Error al insertar la canción: {e}")
+                conn.rollback()  # Revertir cambios en caso de error
+                return
+            print("La cancion ",titulo_cancion, "fue insertada correctamente.")
+            
+        # Confirmar los cambios
+        conn.commit()
+        print("Todo commiteado")
+        
+    except psycopg2.Error as e:
+        print(f"Error al insertar el disco: {e}")
+        conn.rollback()  # Revertir cambios en caso de error
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")    
+        conn.rollback()
             
 def main():
     """
@@ -85,22 +194,27 @@ def main():
     try:
         (host, port, user, password, database) = ask_conn_parameters()          #
         connstring = f'host={host} port={port} user={user} password={password} dbname={database}' 
-        conn    = psycopg2.connect(connstring)                                  #
-                                                                               
+        try:
+            conn    = psycopg2.connect(connstring)    #peta si metes una contraseña que no es. un try aqui no ayuda mucho, peta igual   
+        except Exception as e:
+            print(f"Ocurrió un error: {e}")    
+            return                                                             
         cur     = conn.cursor()  
         nuevo = True
         while(nuevo):
             print_options()                                               # instacia un cursor
             option   = input("¿Qué operación quiere llevar a cabo?: ")
             try:
-                query = resolucion_consultas(option)                                        # prepara una consulta
-                cur.execute(query)   
-                for record in cur.fetchall():                                           # fetchall devuelve todas las filas de la consulta
-                    print(record)                                                   # ejecuta la consulta
+                if option=="13":
+                    insertar_disco(conn, cur)
+                else:
+                    query = resolucion_consultas(option)                                        # prepara una consulta
+                    cur.execute(query)   
+                    for record in cur.fetchall():                                           # fetchall devuelve todas las filas de la consulta
+                        print(record)                                                   # ejecuta la consulta
             except psycopg2.errors.InsufficientPrivilege:
                 print("¡No tienes permisos para llevar a cabo esa operación!")
-            
-            
+               
             nueva = input("¿Desea llevar a cabo una nueva operación? s/n: ")
             if(nueva == "n"):
                 nuevo = False                                                     # imprime las filas
@@ -110,13 +224,18 @@ def main():
         print("The port is not valid!")
     except KeyboardInterrupt:
         print("Program interrupted by user.")
+    except psycopg2.Error as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")    
+            
     finally:
         print("Program finished")
 
 #def prueba_conexion():
 
 
-if __name__ == "__main__":                                                      # Es el modula principal?
+if __name__ == "__main__":                                                      # Es el modulo principal?
     if '--test' in sys.argv:                                                    # chequea el argumento cmdline buscando el modo test
         import doctest                                                          # importa la libreria doctest
         doctest.testmod()                                                       # corre los tests
