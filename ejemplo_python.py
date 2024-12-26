@@ -165,7 +165,7 @@ def insertar_disco(conn, cursor):
             cursor.execute("SELECT COUNT(*) FROM grupo WHERE nombre_grupo = %s;", (nombre_grupo,))            
             if cursor.fetchone()[0] == 0:   
                 try:   
-                    cursor.execute("INSERT INTO grupo (nombre_grupo) VALUES (%s);", (nombre_grupo,urlgrupo))  
+                    cursor.execute("INSERT INTO grupo (nombre_grupo, URL) VALUES (%s,%s);", (nombre_grupo,urlgrupo))  
                 except psycopg2.Error as e:
                     print(f"Error al insertar el grupo: {e}")
                     conn.rollback()  # Revertir cambios en caso de error
