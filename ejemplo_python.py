@@ -78,10 +78,12 @@ def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match
     #opcion 13 añadir disco
    # elif(option == "14"):
       #  query = "SELECT * FROM auditoria;"
-   # elif(option == "100"):       #por si quieres probar lo de insertardisco() xd 
-       # query = "SELECT * FROM disco WHERE titulo_disco='PRUEBADISCO';"
-   # elif(option == "101"):
-      #  query = "SELECT * FROM cancion WHERE titulo_disco='PRUEBADISCO';"
+    elif(option == "100"):       #por si quieres probar lo de insertardisco() xd 
+        query = "SELECT * FROM disco WHERE titulo_disco='PRUEBADISCO';"
+    elif(option == "101"):
+        query = "SELECT * FROM cancion WHERE titulo_disco='PRUEBADISCO';"
+    elif(option == "102"):
+        query = "SELECT * FROM genero WHERE titulo_disco='PRUEBADISCO';"
     else:
         print("Opción no válida")
     return query
@@ -93,8 +95,14 @@ def insertar_disco(conn, cursor):
     """
     try:
         # Pedir los datos básicos del disco
-        titulo_disco = input("Introduce el título del disco: ")
-        anio_publicacion = int(input("Introduce el año de publicación: "))  # Convertir a entero
+        salir=True
+        while(salir):
+            titulo_disco = input("Introduce el título del disco: ")
+            if titulo_disco!='':
+                salir=False
+
+       
+        anio_publicacion = int(input("Introduce el año de publicación: "))  # Convertir a entero. si es solo un enter da error ya que no es numerico
 
         # Verificar si el disco ya existe
         cursor.execute("SELECT COUNT(*) FROM disco WHERE titulo_disco = %s AND anio_publicacion = %s;", (titulo_disco, anio_publicacion)) 
@@ -104,7 +112,14 @@ def insertar_disco(conn, cursor):
         
         # Pedir el resto de datos 
         nombre_grupo = input("Introduce el nombre del grupo: ")
-        url= input("introduce la url del disco: ")
+        if nombre_grupo == "":
+            nombre_grupo = None
+        urlgrupo= input("introduce la url del grupo: ")
+        if urlgrupo == "":
+            urlgrupo = None
+        urldisco= input("introduce la url del disco: ")
+        if urldisco == "":
+            urldisco = None
 
         # Pedir las canciones y sus duraciones
         canciones = []
@@ -121,7 +136,7 @@ def insertar_disco(conn, cursor):
         generos=[]
         salir=True
         while (salir):
-            genero = input("Introduce el título de la canción (o 'salir' para terminar de introducir canciones): ")
+            genero = input("Introduce el título del genero (o 'salir' para terminar de introducir generos): ")
             if genero.lower() == 'salir':  # Si el usuario escribe 'salir', terminamos
                 salir = False
             else:
@@ -129,19 +144,20 @@ def insertar_disco(conn, cursor):
 
 
         # Insertar el grupo si no está registrado
-        cursor.execute("SELECT COUNT(*) FROM grupo WHERE nombre_grupo = %s;", (nombre_grupo))            
-        if cursor.fetchone()[0] == 0:   
-            try:   
-                cursor.execute("INSERT INTO grupo (nombre_grupo) VALUES (%s);", (nombre_grupo))  
-            except psycopg2.Error as e:
-                print(f"Error al insertar el grupo: {e}")
-                conn.rollback()  # Revertir cambios en caso de error
-                return
-            print("El grupo", nombre_grupo," fue insertado correctamente.")
+        if nombre_grupo!=None:
+            cursor.execute("SELECT COUNT(*) FROM grupo WHERE nombre_grupo = %s;", (nombre_grupo,))            
+            if cursor.fetchone()[0] == 0:   
+                try:   
+                    cursor.execute("INSERT INTO grupo (nombre_grupo) VALUES (%s);", (nombre_grupo,urlgrupo))  
+                except psycopg2.Error as e:
+                    print(f"Error al insertar el grupo: {e}")
+                    conn.rollback()  # Revertir cambios en caso de error
+                    return
+                print("El grupo", nombre_grupo," fue insertado correctamente.")
 
         # Insertar el nuevo disco
         try:
-            cursor.execute(" INSERT INTO disco (titulo_disco, anio_publicacion, nombre_grupo, url_portada) VALUES (%s, %s, %s,%s);", (titulo_disco, anio_publicacion,nombre_grupo,url))
+            cursor.execute(" INSERT INTO disco (titulo_disco, anio_publicacion, nombre_grupo, url_portada) VALUES (%s, %s, %s,%s);", (titulo_disco, anio_publicacion,nombre_grupo,urldisco))
         except psycopg2.Error as e:
                 print(f"Error al insertar el disco: {e}")
                 conn.rollback()  # Revertir cambios en caso de error
