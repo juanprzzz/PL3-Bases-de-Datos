@@ -98,12 +98,23 @@ def insertar_disco(conn, cursor):
         salir=True
         while(salir):
             titulo_disco = input("Introduce el título del disco: ")
-            if titulo_disco!='':
+            if titulo_disco!="":
                 salir=False
+            else:
+                print("Error: Debes introducir algún valor no nulo.")
 
-       
-        anio_publicacion = int(input("Introduce el año de publicación: "))  # Convertir a entero. si es solo un enter da error ya que no es numerico
-
+       # anio_publicacion = int(input("Introduce el año de publicación: "))  # Convertir a entero. si es solo un enter da error ya que no es numerico
+        salir=True
+        while(salir):
+            anio_publicacion = input("Introduce el año de publicación: ") 
+    # Intentar convertir el valor a entero, si falla, volver a pedirlo
+            if anio_publicacion.isdigit():
+                salir=False
+                anio_publicacion=int(anio_publicacion)
+            else:
+                print("Error: Debes introducir un número válido para el año de publicación.")
+                
+            
         # Verificar si el disco ya existe
         cursor.execute("SELECT COUNT(*) FROM disco WHERE titulo_disco = %s AND anio_publicacion = %s;", (titulo_disco, anio_publicacion)) 
         if cursor.fetchone()[0] > 0:
@@ -114,9 +125,11 @@ def insertar_disco(conn, cursor):
         nombre_grupo = input("Introduce el nombre del grupo: ")
         if nombre_grupo == "":
             nombre_grupo = None
-        urlgrupo= input("introduce la url del grupo: ")
-        if urlgrupo == "":
-            urlgrupo = None
+        else: #si nombre_grupo, la pk, es null, no puedo meter la url del grupo
+            urlgrupo= input("introduce la url del grupo: ")
+            if urlgrupo == "":
+                urlgrupo = None
+
         urldisco= input("introduce la url del disco: ")
         if urldisco == "":
             urldisco = None
@@ -130,7 +143,10 @@ def insertar_disco(conn, cursor):
                 salir = False
             else:
                 duracion = input("Introduce la duración de la canción en formato MM:SS ")
-                canciones.append((titulo_cancion, duracion))  # Agregar la canción y su duración a la lista
+                if duracion=="":
+                    duracion=None
+                if titulo_cancion != "":
+                    canciones.append((titulo_cancion, duracion))  # Agregar la canción y su duración a la lista
 
         # Pedir los géneros
         generos=[]
@@ -140,11 +156,12 @@ def insertar_disco(conn, cursor):
             if genero.lower() == 'salir':  # Si el usuario escribe 'salir', terminamos
                 salir = False
             else:
-                generos.append(genero)  # Agregar la canción y su duración a la lista
+                if genero != "":
+                    generos.append(genero) 
 
 
-        # Insertar el grupo si no está registrado
-        if nombre_grupo!=None:
+        # Insertar el grupo si no está registrado y si no es null
+        if nombre_grupo is not None:
             cursor.execute("SELECT COUNT(*) FROM grupo WHERE nombre_grupo = %s;", (nombre_grupo,))            
             if cursor.fetchone()[0] == 0:   
                 try:   
@@ -178,13 +195,20 @@ def insertar_disco(conn, cursor):
         for cancion in canciones:
             titulo_cancion, duracion = cancion  
             try:
-                cursor.execute("""
-                INSERT INTO cancion (titulo_disco, anio_publicacion, titulo_cancion, duracion) 
-                VALUES (%s, %s, %s, MAKE_INTERVAL(
-                    mins => SPLIT_PART(%s, ':', 1)::INTEGER, 
-                    secs => SPLIT_PART(%s, ':', 2)::INTEGER
-                )::TIME);
-            """, (titulo_disco, anio_publicacion, titulo_cancion, duracion, duracion))
+
+                if duracion is None:
+                    # Si la duración es None (campo vacío), insertamos como NULL
+                    cursor.execute("INSERT INTO cancion (titulo_disco, anio_publicacion, titulo_cancion, duracion) VALUES (%s, %s, %s, NULL);", 
+                                   (titulo_disco, anio_publicacion, titulo_cancion))
+                else:
+                    # Si la duración no es None, insertamos usando MAKE_INTERVAL y ::TIME como lo pediste originalmente
+                    cursor.execute("""
+                    INSERT INTO cancion (titulo_disco, anio_publicacion, titulo_cancion, duracion) 
+                    VALUES (%s, %s, %s, MAKE_INTERVAL(
+                        mins => SPLIT_PART(%s, ':', 1)::INTEGER, 
+                        secs => SPLIT_PART(%s, ':', 2)::INTEGER
+                    )::TIME);
+                    """, (titulo_disco, anio_publicacion, titulo_cancion, duracion, duracion))
 
             except psycopg2.Error as e:
                 print(f"Error al insertar la canción: {e}")
