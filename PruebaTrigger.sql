@@ -27,7 +27,7 @@ VALUES
 \echo 'Ver discos insertados'
 SELECT * FROM disco WHERE titulo_disco IN ('PRUEBADISCO','ROCKTHIS');
 
-\echo 'insert into desea pruebadisco a juangomez'
+\echo 'Insert into desea pruebadisco a juangomez'
 -- Crear registros de prueba para la tabla "desea"
 INSERT INTO desea (titulo_disco, anio_publicacion, nombre_usuario)
 VALUES ('PRUEBADISCO', 2020, 'juangomez');
@@ -37,7 +37,7 @@ SELECT * FROM desea WHERE nombre_usuario='juangomez';
 \echo 'Select from tiene (no tiene aún pruebadisco)'
 SELECT * FROM tiene WHERE nombre_usuario='juangomez';
 
-\echo 'insert into tiene pruebadisco a juangomez'
+\echo 'Insert into tiene pruebadisco a juangomez'
 -- Crear registros de prueba para la tabla "tiene". Al insertar en tiene, se debería borrar de desea
 INSERT INTO tiene (formato, pais, anio_edicion, titulo_disco, anio_publicacion, nombre_usuario, estado)
 VALUES ('CD', 'UK', 2024, 'PRUEBADISCO', 2020, 'juangomez', 'VG');
@@ -62,7 +62,7 @@ WHERE titulo_disco = 'PRUEBADISCO';
 SELECT * FROM disco WHERE titulo_disco='PRUEBADISCO';
 
 -- Cambiar el formato en "tiene"
-\echo 'update en edición (y en tiene por el "on update cascade"): cambiando formato de "pruebadisco"'
+\echo 'Update en edición (y en tiene por el "on update cascade"): cambiando formato de "pruebadisco"'
 UPDATE edicion
 SET formato = 'Vinyl'
 WHERE titulo_disco = 'PRUEBADISCO';
@@ -73,7 +73,7 @@ WHERE titulo_disco = 'PRUEBADISCO';
 SELECT * FROM auditoria;
 
 
-\echo 'Delete from tiene'
+\echo 'Delete from tiene: eliminando "pruebadisco"'
 DELETE FROM tiene
 WHERE titulo_disco = 'PRUEBADISCO';
 

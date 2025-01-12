@@ -33,29 +33,31 @@ CREATE TRIGGER tg_auditoria_disco after INSERT or UPDATE or DELETE
   
 ---------------------------------------
 
-
-CREATE OR REPLACE FUNCTION fn_usuario_tiene_edicion() RETURNS TRIGGER AS $fn_usuario_tiene_edicion$
-  BEGIN
-   IF TG_OP='INSERT' THEN
-     IF EXISTS(
-      SELECT 1 --select * ver
-      FROM desea
-      WHERE desea.nombre_usuario = NEW.nombre_usuario
-      AND desea.titulo_disco = NEW.titulo_disco
-      AND desea.anio_publicacion = NEW.anio_publicacion
-     )
-     THEN
-        DELETE FROM desea
-        WHERE desea.nombre_usuario = NEW.nombre_usuario
-      AND desea.titulo_disco = NEW.titulo_disco
-      AND desea.anio_publicacion = NEW.anio_publicacion;
-      END IF;
-   END IF;	 
+CREATE OR REPLACE FUNCTION fn_usuario_tiene_edicion()
+RETURNS TRIGGER AS $fn_usuario_tiene_edicion$
+BEGIN
+   IF TG_OP = 'INSERT' THEN
+       IF EXISTS(
+          SELECT 1
+          FROM desea
+          WHERE desea.nombre_usuario = NEW.nombre_usuario
+            AND desea.titulo_disco = NEW.titulo_disco
+            AND desea.anio_publicacion = NEW.anio_publicacion
+       ) THEN
+           DELETE FROM desea
+           WHERE desea.nombre_usuario = NEW.nombre_usuario
+             AND desea.titulo_disco = NEW.titulo_disco
+             AND desea.anio_publicacion = NEW.anio_publicacion;
+       END IF;
+   END IF;
    RETURN NEW;
-  END;
-$fn_usuario_tiene_edicion$ LANGUAGE plpgsql;
+END;
+$fn_usuario_tiene_edicion$ 
+LANGUAGE plpgsql
+SECURITY DEFINER;
 
-CREATE TRIGGER tg_usuario_tiene_edicion after INSERT
+
+CREATE OR REPLACE TRIGGER tg_usuario_tiene_edicion after INSERT
   ON tiene FOR EACH ROW
   EXECUTE PROCEDURE fn_usuario_tiene_edicion(); 
 
