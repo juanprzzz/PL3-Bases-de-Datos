@@ -76,14 +76,6 @@ def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match
     elif(option == "12"):
         query = "WITH total_ediciones AS( SELECT t.nombre_usuario, COUNT(*) AS total_ediciones FROM tiene t GROUP BY t.nombre_usuario ) SELECT u.nombre_usuario, te.total_ediciones FROM usuario u JOIN total_ediciones te ON u.nombre_usuario = te.nombre_usuario WHERE te.total_ediciones=(SELECT MAX(total_ediciones) FROM total_ediciones);"
     #opcion 13 añadir disco
-    elif(option == "14"):
-        query = "SELECT * FROM auditoria;"
-    elif(option == "100"):       #por si quieres probar lo de insertardisco() xd 
-        query = "SELECT * FROM disco WHERE titulo_disco='PRUEBADISCO';"
-    elif(option == "101"):
-        query = "SELECT * FROM cancion WHERE titulo_disco='PRUEBADISCO';"
-    elif(option == "102"):
-        query = "SELECT * FROM genero WHERE titulo_disco='PRUEBADISCO';"
     else:
         print("Opción no válida")
     return query
