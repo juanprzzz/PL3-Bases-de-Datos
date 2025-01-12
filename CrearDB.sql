@@ -200,15 +200,7 @@ SELECT DISTINCT ON (formato, paisEdicion, añoEdicion, tituloDisco, añoLanzamie
     CAST(usuarioTieneEdicion.añoLanzamiento AS SMALLINT),
     usuarioTieneEdicion.nombreUsuario,
     usuarioTieneEdicion.estado
-FROM usuarioTieneEdicion JOIN usuario ON usuario.nombre_usuario = usuarioTieneEdicion.nombreUsuario 
-    /*JOIN edicion ON (
-    edicion.formato = usuarioTieneEdicion.formato AND 
-    edicion.anio_edicion  = CAST(usuarioTieneEdicion.añoEdicion AS SMALLINT) AND 
-    edicion.pais = usuarioTieneEdicion.paisEdicion AND 
-    edicion.titulo_disco = usuarioTieneEdicion.tituloDisco AND 
-    edicion.anio_publicacion = CAST(usuarioTieneEdicion.añoLanzamiento AS SMALLINT))*/
-;
-SELECT * from tiene LIMIT 10;
+FROM usuarioTieneEdicion JOIN usuario ON usuario.nombre_usuario = usuarioTieneEdicion.nombreUsuario ;
 
 INSERT INTO desea (titulo_disco, anio_publicacion, nombre_usuario)
 SELECT DISTINCT ON (tituloDisco, añoLanzamiento, nombreUsuario)
@@ -228,7 +220,6 @@ disco.NombreDisco,
             secs => split_part(cancion.duracion, ':', 2)::INTEGER) ::TIME
             FROM discoscsv disco JOIN cancionescsv cancion ON disco.idDisco = cancion.idDisco;
 
----------------------\o prueba.txt
 /*
 \echo '-----------------------MOSTRANDO CONSULTAS--------------------'
 
