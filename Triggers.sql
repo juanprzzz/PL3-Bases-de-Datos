@@ -16,7 +16,9 @@ CREATE OR REPLACE FUNCTION fn_auditoria() RETURNS TRIGGER AS $fn_auditoria$
   END IF;
   RETURN NULL; 
   END;
-$fn_auditoria$ LANGUAGE plpgsql;
+$fn_auditoria$ 
+LANGUAGE plpgsql
+SECURITY DEFINER;
 
 CREATE TRIGGER tg_auditoria_disco after INSERT or UPDATE or DELETE
   ON disco 

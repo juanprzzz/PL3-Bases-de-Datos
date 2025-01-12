@@ -125,17 +125,17 @@ VALUES ('Closer', 2020, 'juangomez');
 SELECT * FROM desea WHERE nombre_usuario = 'juangomez';
 SELECT * FROM tiene WHERE nombre_usuario = 'juangomez';
 
-\echo 'Muestra actualización en auditoría: insert desea'
-SELECT * FROM auditoria;
-
 INSERT INTO tiene (formato, pais, anio_edicion, titulo_disco, anio_publicacion, nombre_usuario, estado)
 VALUES ('Vinyl', 'Europe', 2015, 'Closer', 2020, 'juangomez', 'VG');
-
+RESET ROLE;
+SET ROLE admins;
+\echo 'Muestra actualización en auditoría: insert desea (Para mostrar esta tabla hemos pasado temporalmente a usuario admin)'
+SELECT * FROM auditoria;
+RESET ROLE;
+SET ROLE clientes;
 SELECT * FROM desea WHERE nombre_usuario = 'juangomez';
 SELECT * FROM tiene WHERE nombre_usuario = 'juangomez';
 
-\echo 'Muestra actualización en auditoría: insert desea'
-SELECT * FROM auditoria;
 
 
 \echo 'Sin embargo, al eliminar este mismo elemento que hemos añadido, de desea, provocará un error'

@@ -20,8 +20,6 @@ GRANT INSERT, UPDATE, DELETE, SELECT ON ALL TABLES IN SCHEMA public TO gestores;
 
 -- Permisos para clientes 
 GRANT SELECT, INSERT ON tiene, desea TO clientes;
-GRANT SELECT ON auditoria TO clientes;
-GRANT INSERT ON auditoria TO clientes;
 
 -- Permisos para invitados 
 GRANT SELECT ON disco, cancion TO invitados;
