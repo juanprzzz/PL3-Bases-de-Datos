@@ -50,7 +50,7 @@ def print_options():
     print("12--- Lista el usuario que más discos, contando todas sus ediciones tiene en la base de datos")
     print("13--- Insertar un nuevo disco con su grupo y canciones")
 
-def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match pero quién sabe si lo tendrá actualizado)
+def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match)
     if(option == "1"):
         query = "SELECT cancion.titulo_disco, cancion.anio_publicacion FROM cancion GROUP BY cancion.titulo_disco,  cancion.anio_publicacion HAVING COUNT(*) > 5 ORDER BY cancion.anio_publicacion, cancion.titulo_disco;"
     elif(option == "2"):
@@ -76,8 +76,8 @@ def resolucion_consultas(option): #No existen switch en Python (Desde 3.10 match
     elif(option == "12"):
         query = "WITH total_ediciones AS( SELECT t.nombre_usuario, COUNT(*) AS total_ediciones FROM tiene t GROUP BY t.nombre_usuario ) SELECT u.nombre_usuario, te.total_ediciones FROM usuario u JOIN total_ediciones te ON u.nombre_usuario = te.nombre_usuario WHERE te.total_ediciones=(SELECT MAX(total_ediciones) FROM total_ediciones);"
     #opcion 13 añadir disco
-   # elif(option == "14"):
-      #  query = "SELECT * FROM auditoria;"
+    elif(option == "14"):
+        query = "SELECT * FROM auditoria;"
     elif(option == "100"):       #por si quieres probar lo de insertardisco() xd 
         query = "SELECT * FROM disco WHERE titulo_disco='PRUEBADISCO';"
     elif(option == "101"):
@@ -103,7 +103,6 @@ def insertar_disco(conn, cursor):
             else:
                 print("Error: Debes introducir algún valor no nulo.")
 
-       # anio_publicacion = int(input("Introduce el año de publicación: "))  # Convertir a entero. si es solo un enter da error ya que no es numerico
         salir=True
         while(salir):
             anio_publicacion = input("Introduce el año de publicación: ") 
@@ -201,7 +200,7 @@ def insertar_disco(conn, cursor):
                     cursor.execute("INSERT INTO cancion (titulo_disco, anio_publicacion, titulo_cancion, duracion) VALUES (%s, %s, %s, NULL);", 
                                    (titulo_disco, anio_publicacion, titulo_cancion))
                 else:
-                    # Si la duración no es None, insertamos usando MAKE_INTERVAL y ::TIME como lo pediste originalmente
+                    # Si la duración no es None, insertamos usando MAKE_INTERVAL y ::TIME 
                     cursor.execute("""
                     INSERT INTO cancion (titulo_disco, anio_publicacion, titulo_cancion, duracion) 
                     VALUES (%s, %s, %s, MAKE_INTERVAL(
@@ -232,10 +231,10 @@ def main():
         main :: () -> IO None
     """
     try:
-        (host, port, user, password, database) = ask_conn_parameters()          #
+        (host, port, user, password, database) = ask_conn_parameters()          
         connstring = f'host={host} port={port} user={user} password={password} dbname={database}' 
         try:
-            conn    = psycopg2.connect(connstring)    #peta si metes una contraseña que no es. un try aqui no ayuda mucho, peta igual   
+            conn    = psycopg2.connect(connstring)      
         except Exception as e:
             print(f"Ocurrió un error: {e}")    
             return                                                             
@@ -272,7 +271,6 @@ def main():
     finally:
         print("Program finished")
 
-#def prueba_conexion():
 
 
 if __name__ == "__main__":                                                      # Es el modulo principal?

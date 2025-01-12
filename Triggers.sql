@@ -12,9 +12,9 @@ CREATE OR REPLACE FUNCTION fn_auditoria() RETURNS TRIGGER AS $fn_auditoria$
   -- de dicha acción
   -- Junto con la acción se escribe fecha y hora en la que se ha producido la acción
   IF TG_OP='INSERT' OR TG_OP='UPDATE' OR TG_OP='DELETE' THEN
-      INSERT INTO auditoria VALUES (TG_OP,current_timestamp,current_user,TG_RELNAME);
+      INSERT INTO auditoria (accion, fecha, usuario, tabla) VALUES (TG_OP, current_timestamp, current_user, TG_RELNAME);
   END IF;
-  RETURN NULL;
+  RETURN NULL; 
   END;
 $fn_auditoria$ LANGUAGE plpgsql;
 

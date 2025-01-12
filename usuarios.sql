@@ -1,28 +1,35 @@
 /* Creando grupos de usuarios */
+CREATE ROLE admins WITH SUPERUSER INHERIT;  -- Permite heredar permisos de admins
+CREATE ROLE gestores INHERIT;              -- Los gestores heredarán permisos
+CREATE ROLE clientes INHERIT;
+CREATE ROLE invitados INHERIT;
 
-CREATE ROLE admins WITH SUPERUSER;
-CREATE ROLE gestores;
-CREATE ROLE clientes;
-CREATE ROLE invitados;
+/* Asignación de permisos */
 
-/*Asignación de permisos*/
+/* Permitir a los admins crear, modificar y administrar el esquema y la base de datos */
+GRANT CREATE, USAGE ON SCHEMA public TO admins;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO admins;
 
---GRANT ALL ON auditoria, cancion, desea, disco, edicion, genero, grupo, tiene, usuario TO admins;
---GRANT CREATE ON DATABASE pl3 TO admins;
-GRANT INSERT, UPDATE, DELETE, SELECT ON auditoria, cancion, desea, disco, edicion, genero, grupo, tiene, usuario TO gestores;
+/* Permisos para gestores */
+GRANT INSERT, UPDATE, DELETE, SELECT ON ALL TABLES IN SCHEMA public TO gestores;
 
-GRANT SELECT ON tiene, desea TO clientes;
-GRANT INSERT ON tiene, desea TO clientes;
+/* Permisos para clientes */
+GRANT SELECT, INSERT ON tiene, desea TO clientes;
 
+/* Permisos para invitados */
 GRANT SELECT ON disco, cancion TO invitados;
 
-/*Creando usuarios y asignándoles un role*/
+/* Permisos futuros (opcional, para nuevos objetos) */
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO admins;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT ON TABLES TO gestores;
 
-CREATE USER admin WITH PASSWORD 'admin';
+/* Creando usuarios y asignándoles un role */
+CREATE USER admin WITH PASSWORD 'admin'; -- Usuario admin con herencia
 CREATE USER gestor WITH PASSWORD 'gestor';
 CREATE USER cliente WITH PASSWORD 'cliente';
 CREATE USER invitado WITH PASSWORD 'invitado';
 
+/* Asignar roles a los usuarios */
 GRANT admins TO admin;
 GRANT gestores TO gestor;
 GRANT clientes TO cliente;
@@ -32,12 +39,13 @@ GRANT invitados TO invitado;
 /*
 Para quitar los usuarios anteriores hay que llevar a cabo los siguientes comandos, primero hay que quitar todos los permisos, y luego quitar los usuarios, una vez hecho eso, volver a ejecutar el .sql:
     Para admin:
-    REVOKE ALL PRIVILEGES ON auditoria, cancion, desea, disco, edicion, genero, grupo, tiene, usuario FROM admin; DROP USER admin;DROP USER admins;
+    REVOKE ALL PRIVILEGES ON DATABASE pl3 FROM admins; DROP USER admin;DROP USER admins;
+    ON DATABASE pl3
     Para gestor:
-    REVOKE ALL PRIVILEGES ON auditoria, cancion, desea, disco, edicion, genero, grupo, tiene, usuario FROM gestor; DROP USER gestor;DROP user gestores;
+    REVOKE ALL PRIVILEGES FROM gestor; DROP USER gestor;DROP user gestores;
     Para cliente:
-    REVOKE ALL PRIVILEGES ON tiene, desea FROM cliente; DROP USER cliente;DROP USER clientes;
+    REVOKE ALL PRIVILEGES FROM cliente; DROP USER cliente;DROP USER clientes;
     Para invitado:
-    REVOKE ALL PRIVILEGES ON disco, cancion FROM invitado; DROP USER invitado;DROP USER invitados;
+     REVOKE ALL PRIVILEGES ON disco,cancion FROM invitado; DROP USER invitado;DROP USER invitados;
 */
 
