@@ -1,8 +1,8 @@
 /* Creando grupos de usuarios */
-CREATE ROLE admins WITH SUPERUSER INHERIT;  -- Permite heredar permisos de admins
-CREATE ROLE gestores INHERIT;              -- Los gestores heredarán permisos
-CREATE ROLE clientes INHERIT;
-CREATE ROLE invitados INHERIT;
+CREATE ROLE admins WITH SUPERUSER; 
+CREATE ROLE gestores;             
+CREATE ROLE clientes;
+CREATE ROLE invitados;
 
 /* Asignación de permisos */
 
