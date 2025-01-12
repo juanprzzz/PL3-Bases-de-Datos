@@ -1,7 +1,8 @@
-DROP USER admin;
-DROP USER gestor;
-DROP USER cliente;
-DROP USER invitado;
+--DROP USER admin;
+--DROP USER gestor;
+--DROP USER cliente;
+--DROP USER invitado;
+--REVOKE ALL PRIVILEGES ON DATABASE pl3 FROM admins; ...
 
 -- Creando grupos de usuarios 
 CREATE ROLE admins WITH SUPERUSER; 
@@ -39,18 +40,4 @@ GRANT admins TO admin;
 GRANT gestores TO gestor;
 GRANT clientes TO cliente;
 GRANT invitados TO invitado;
-
-
-/*
-Para quitar los usuarios anteriores hay que llevar a cabo los siguientes comandos, primero hay que quitar todos los permisos, y luego quitar los usuarios, una vez hecho eso, volver a ejecutar el .sql:
-    Para admin:
-    REVOKE ALL PRIVILEGES ON DATABASE pl3 FROM admins; DROP USER admin;DROP USER admins;
-    ON DATABASE pl3
-    Para gestor:
-    REVOKE ALL PRIVILEGES FROM gestor; DROP USER gestor;DROP user gestores;
-    Para cliente:
-    REVOKE ALL PRIVILEGES ON DATABASE pl3 FROM cliente; DROP USER cliente;DROP USER clientes;
-    Para invitado:
-     REVOKE ALL PRIVILEGES ON disco,cancion FROM invitado; DROP USER invitado;DROP USER invitados;
-*/
 
