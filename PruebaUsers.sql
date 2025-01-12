@@ -5,8 +5,7 @@ SET search_path TO public;
 
 BEGIN;
 -- Prueba de admins
-\echo ''
-\echo '------------------Usuario Admin-------------------' 
+\echo '\n------------------Usuario Admin-------------------' 
 SET ROLE admins;
 
 \echo 'Este usuario puede llevar a cabo cualquier operación'
@@ -56,8 +55,7 @@ ROLLBACK;
 
 BEGIN;
 --Prueba de gestores
-\echo ''
-\echo '------------------Usuario gestor------------------' 
+\echo '\n------------------Usuario gestor------------------' 
 SET ROLE gestores;
 \echo 'Este usuario puede insertar, borrar, actualizar y borrar, pero no puede crear nuevas tablas'
 
@@ -102,8 +100,7 @@ ROLLBACK;
 
 BEGIN;
 -- Prueba de clientes
-\echo ''
-\echo '------------------Usuario cliente------------------' 
+\echo '\n------------------Usuario cliente------------------' 
 SET ROLE clientes;
 
 
@@ -135,8 +132,7 @@ ROLLBACK;
 
 BEGIN;
 --Prueba de invitados
-\echo ''
-\echo '------------------Usuario Invitado------------------'
+\echo '\n------------------Usuario Invitado------------------'
 SET ROLE invitados;
 
 
